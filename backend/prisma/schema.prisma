@@ -1,0 +1,237 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  COACH
+  PARENT
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum PlayingRole {
+  BATSMAN
+  BOWLER
+  ALL_ROUNDER
+  WICKET_KEEPER
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LEAVE
+}
+
+enum FeeStatus {
+  PAID
+  PENDING
+  OVERDUE
+}
+
+enum PaymentMethod {
+  CASH
+  UPI
+  CARD
+  BANK_TRANSFER
+}
+
+enum MatchResult {
+  WON
+  LOST
+  DRAW
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(COACH)
+  playerId     String?  @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  player        Player?  @relation(fields: [playerId], references: [id], onDelete: Cascade)
+}
+
+model Player {
+  id                  String       @id @default(cuid())
+  playerCode          String       @unique
+  fullName            String
+  dateOfBirth         DateTime
+  gender              Gender
+  mobileNumber        String
+  parentName          String
+  parentContactNumber String
+  address             String
+  bloodGroup          String?
+  emergencyContact    String
+  playingRole         PlayingRole
+  battingStyle        String
+  bowlingStyle        String
+  jerseyNumber        Int
+  joiningDate         DateTime
+  skillLevel          SkillLevel
+  photoUrl            String?
+  idProofUrl          String?
+  monthlyFeeAmount    Int
+  admissionFee        Int          @default(0)
+  discount            Int          @default(0)
+  active              Boolean      @default(true)
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  attendance          Attendance[]
+  extraPractices      ExtraPractice[]
+  feePayments         FeePayment[]
+  performanceStats    PerformanceStat[]
+  assessments         SkillAssessment[]
+  matchPerformances   PlayerMatchPerformance[]
+  user                User?
+}
+
+model Attendance {
+  id            String           @id @default(cuid())
+  playerId      String
+  date          DateTime
+  morningStatus AttendanceStatus @default(ABSENT)
+  eveningStatus AttendanceStatus @default(ABSENT)
+  remarks       String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, date])
+  @@index([date])
+}
+
+model ExtraPractice {
+  id           String   @id @default(cuid())
+  playerId     String
+  date         DateTime
+  practiceType String
+  durationMins Int
+  coachRemarks String?
+  createdAt    DateTime @default(now())
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+}
+
+model FeePayment {
+  id            String        @id @default(cuid())
+  playerId      String
+  dueDate       DateTime
+  paidDate      DateTime?
+  amountPaid    Int          @default(0)
+  paymentMethod PaymentMethod
+  receiptNumber String       @unique
+  status        FeeStatus    @default(PENDING)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([dueDate])
+  @@index([status])
+}
+
+model PerformanceStat {
+  id                 String   @id @default(cuid())
+  playerId           String
+  recordedAt         DateTime @default(now())
+  matchesPlayed      Int      @default(0)
+  innings            Int      @default(0)
+  runsScored         Int      @default(0)
+  highestScore       Int      @default(0)
+  battingAverage     Float    @default(0)
+  strikeRate         Float    @default(0)
+  boundaries         Int      @default(0)
+  fifties            Int      @default(0)
+  hundreds           Int      @default(0)
+  oversBowled        Float    @default(0)
+  wickets            Int      @default(0)
+  economy            Float    @default(0)
+  bestBowlingFigures String?
+  maidens            Int      @default(0)
+  catches            Int      @default(0)
+  runOuts            Int      @default(0)
+  stumpings          Int      @default(0)
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+}
+
+model SkillAssessment {
+  id              String   @id @default(cuid())
+  playerId        String
+  assessmentMonth DateTime
+  footwork        Int
+  shotSelection   Int
+  timing          Int
+  powerHitting    Int
+  line            Int
+  length          Int
+  paceSpin        Int
+  swingSpin       Int
+  speed           Int
+  agility         Int
+  endurance       Int
+  strength        Int
+  catching        Int
+  throwing        Int
+  reflexes        Int
+  coachNotes      String?
+  createdAt       DateTime @default(now())
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, assessmentMonth])
+}
+
+model Match {
+  id           String      @id @default(cuid())
+  matchName    String
+  opponentTeam String
+  date         DateTime
+  venue        String
+  result       MatchResult
+  createdAt    DateTime    @default(now())
+
+  performances PlayerMatchPerformance[]
+}
+
+model PlayerMatchPerformance {
+  id           String @id @default(cuid())
+  playerId     String
+  matchId      String
+  runs         Int    @default(0)
+  balls        Int    @default(0)
+  fours        Int    @default(0)
+  sixes        Int    @default(0)
+  overs        Float  @default(0)
+  runsConceded Int    @default(0)
+  wickets      Int    @default(0)
+  catches      Int    @default(0)
+  runOuts      Int    @default(0)
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  match  Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, matchId])
+}
