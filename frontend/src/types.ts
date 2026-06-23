@@ -7,16 +7,32 @@ export type Player = {
   mobileNumber: string;
   parentName: string;
   parentContactNumber: string;
+  address?: string;
   playingRole: string;
   battingStyle: string;
   bowlingStyle: string;
   jerseyNumber: number;
   skillLevel: string;
+  photoUrl?: string;
   monthlyFeeAmount: number;
   active: boolean;
   feePayments?: FeePayment[];
   attendance?: Attendance[];
   performanceStats?: PerformanceStat[];
+  assessments?: Assessment[];
+  matchPerformances?: Array<{
+    id: string;
+    runs: number;
+    balls: number;
+    wickets: number;
+    catches: number;
+    match: Match;
+  }>;
+  user?: {
+    id: string;
+    email: string;
+    role: string;
+  };
 };
 
 export type Attendance = {
@@ -88,4 +104,36 @@ export type Match = {
     catches: number;
     player: Player;
   }>;
+};
+
+export type FeeAlert = {
+  feeId: string;
+  playerId: string;
+  playerName: string;
+  parentContactNumber: string;
+  dueDate: string;
+  pendingAmount: number;
+  alertType: string;
+};
+
+export type AttendanceSummary = {
+  playerId: string;
+  name: string;
+  present: number;
+  absent: number;
+  leave: number;
+  total: number;
+  attendancePercent: number;
+};
+
+export type Tournament = {
+  id: string;
+  name: string;
+  season: string;
+  startDate: string;
+  endDate?: string;
+  venue: string;
+  status: string;
+  notes?: string;
+  matches: Match[];
 };

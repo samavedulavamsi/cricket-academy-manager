@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="42" fill="#10233f"/>
+  <circle cx="139" cy="54" r="28" fill="#b8392f"/>
+  <path d="M129 31c11 12 20 27 27 44M121 39c11 12 20 27 27 44" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".85"/>
+  <path d="M38 132h116" stroke="#d7a829" stroke-width="10" stroke-linecap="round"/>
+  <path d="M57 50v82M96 50v82M135 50v82" stroke="#17834b" stroke-width="12" stroke-linecap="round"/>
+  <text x="96" y="163" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="800" fill="#fff">DBR</text>
+</svg>

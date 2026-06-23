@@ -5,6 +5,13 @@ export const loginSchema = z.object({
   password: z.string().min(8)
 });
 
+export const playerRegistrationSchema = z.object({
+  playerCode: z.string().min(3),
+  parentContactNumber: z.string().min(8),
+  email: z.string().email(),
+  password: z.string().min(8)
+});
+
 export const playerSchema = z.object({
   fullName: z.string().min(2),
   dateOfBirth: z.coerce.date(),
@@ -56,4 +63,26 @@ export const googleFormPlayerSchema = z.object({
   discount: z.coerce.number().int().nonnegative().default(0),
   portalEmail: z.string().email().optional().or(z.literal("")),
   portalPassword: z.string().min(8).optional().or(z.literal(""))
+});
+
+export const playerPhotoSchema = z.object({
+  photoUrl: z.string().min(10)
+});
+
+export const jerseySchema = z.object({
+  jerseyNumber: z.coerce.number().int().positive()
+});
+
+export const tournamentSchema = z.object({
+  name: z.string().min(2),
+  season: z.string().min(2),
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date().optional().or(z.literal("")),
+  venue: z.string().min(2),
+  status: z.string().min(2).default("UPCOMING"),
+  notes: z.string().optional()
+});
+
+export const whatsappReminderSchema = z.object({
+  feeIds: z.array(z.string()).optional()
 });

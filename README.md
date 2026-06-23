@@ -67,14 +67,51 @@ No sample players are inserted. Add players through the app forms.
 
 ## Player Portal Logins
 
-When adding a player, fill:
+There are two ways to create a player portal account.
+
+Coach-created account:
 
 - `Player Portal Email`
 - `Player Portal Password`
 
+Player-created account:
+
+1. Add/import the player first.
+2. Give the player their `Player Code`.
+3. Player opens the `Create` tab on the login screen.
+4. Player verifies with player code + parent contact number.
+5. Player creates their own email/password login.
+
 That player can then use the `Player` tab on the login screen to see only their own details.
 
 Coaches can remove a player from the `Players` page. Removing a player also deletes linked attendance, fee, performance, improvement, match-performance, and portal-login data.
+
+## Added Academy Modules
+
+- Player photo upload from the `Players` table.
+- WhatsApp fee reminder links from the `WhatsApp` module.
+- Parent/player portal via the `Player` login tab.
+- Match statistics dashboard in `Match Dashboard`.
+- Attendance summaries in `Attendance Reports`.
+- Fee due and overdue alerts in `Fee Alerts`.
+- Jersey number management in `Jerseys`.
+- Tournament creation and listing in `Tournaments`.
+
+WhatsApp reminders use click-to-send `wa.me` links. A full automatic WhatsApp sender requires a WhatsApp Business API provider and approved message templates.
+
+## Mobile / Play Store Path
+
+The frontend is now PWA-ready with:
+
+- `manifest.webmanifest`
+- service worker
+- app icons
+- mobile viewport/theme metadata
+- responsive layouts
+
+For Play Store publishing, package the PWA using a Trusted Web Activity or wrap the frontend with Capacitor after deploying the backend and frontend publicly.
+
+Player data is stored in PostgreSQL. CSV reports can be opened in Excel.
 
 If your database already has old demo players from an earlier version, clear them with:
 

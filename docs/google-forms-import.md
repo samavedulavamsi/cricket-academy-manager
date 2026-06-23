@@ -4,7 +4,7 @@ Yes, you can collect player registrations in Google Forms and store them in this
 
 ## Recommended Flow
 
-Google Form -> Google Sheet -> Apps Script -> `POST /api/import/google-forms/player`
+Google Form -> Google Sheet -> Apps Script -> `POST /api/import/google-forms/player` -> Coach gives Player Code -> Player creates their own account
 
 This app now includes the backend endpoint:
 
@@ -40,8 +40,7 @@ Create a Google Form with these question titles:
 - Monthly Fee Amount
 - Admission Fee
 - Discount
-- Portal Email
-- Portal Password
+Portal email/password are optional. The recommended flow is to leave these blank and let the player create their own password from the `Create` tab in the app.
 
 Use these exact option values where possible:
 
@@ -78,9 +77,7 @@ function onFormSubmit(e) {
     skillLevel: value(row, "Skill Level") || "BEGINNER",
     monthlyFeeAmount: value(row, "Monthly Fee Amount") || 0,
     admissionFee: value(row, "Admission Fee") || 0,
-    discount: value(row, "Discount") || 0,
-    portalEmail: value(row, "Portal Email"),
-    portalPassword: value(row, "Portal Password")
+    discount: value(row, "Discount") || 0
   };
 
   UrlFetchApp.fetch(API_URL, {
@@ -110,3 +107,18 @@ Then add an installable trigger:
 ## Local Development Note
 
 Google Apps Script cannot call `localhost`. For local testing, expose your backend with a tunnel such as ngrok or Cloudflare Tunnel, then set `API_URL` to that public HTTPS URL.
+
+## Player Self Registration
+
+After the Google Form import creates the player record:
+
+1. Coach shares the generated `playerCode` with the player.
+2. Player opens the app and selects `Create`.
+3. Player enters:
+   - Player Code
+   - Parent Contact Number
+   - Email
+   - New Password
+4. The app verifies the player code and parent contact number before creating the login.
+
+Player data is stored securely in PostgreSQL. Reports can be downloaded as CSV, which opens in Excel.

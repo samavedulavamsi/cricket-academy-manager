@@ -28,7 +28,7 @@ export async function authenticate(email: string, password: string) {
   return { id: user.id, name: user.name, email: user.email, role: user.role, playerId: user.playerId };
 }
 
-export function signSession(user: SessionUser) {
+function signSession(user: SessionUser) {
   const secret = process.env.JWT_SECRET;
   if (!secret) throw new Error("JWT_SECRET is required");
   return jwt.sign(user, secret, { expiresIn: "7d" });
