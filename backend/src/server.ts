@@ -4,6 +4,7 @@ import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
+import path from "node:path";
 import { authenticate, clearSessionCookie, requireAuth, requireCoach, setSessionCookie } from "./lib/auth.js";
 import { prisma } from "./lib/prisma.js";
 import {
@@ -22,6 +23,7 @@ import { hashPassword } from "./lib/password.js";
 const app = express();
 const port = Number(process.env.PORT ?? 4000);
 const clientUrl = process.env.CLIENT_URL ?? "http://localhost:5173";
+const frontendDistPath = path.resolve(process.cwd(), "../frontend/dist");
 
 type ReportPlayer = {
   playerCode: string;
@@ -470,6 +472,13 @@ app.get("/api/reports/:type", requireAuth, async (request, response) => {
   response.header("Content-Type", "text/csv");
   response.attachment(`${request.params.type}.csv`);
   response.send(csv);
+});
+
+app.use(express.static(frontendDistPath));
+
+app.get("*", (request, response, next) => {
+  if (request.path.startsWith("/api")) return next();
+  response.sendFile(path.join(frontendDistPath, "index.html"));
 });
 
 app.use((error: unknown, _request: express.Request, response: express.Response, _next: express.NextFunction) => {

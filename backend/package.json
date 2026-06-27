@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "prisma generate --schema prisma/schema.prisma && tsc -p tsconfig.json",
+    "build": "npm install --prefix .. && npm run build --prefix ../frontend && prisma generate --schema prisma/schema.prisma && tsc -p tsconfig.json",
     "start": "node dist/src/server.js",
     "prisma:generate": "prisma generate --schema prisma/schema.prisma",
     "prisma:migrate": "prisma migrate dev --schema prisma/schema.prisma",
