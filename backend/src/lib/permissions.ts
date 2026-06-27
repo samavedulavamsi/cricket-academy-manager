@@ -1,0 +1,70 @@
+import type { PermissionKey, UserRole } from "@prisma/client";
+
+type PermissionMap = Record<UserRole, PermissionKey[]>;
+
+export const allPermissions: PermissionKey[] = [
+  "MANAGE_ACADEMY",
+  "MANAGE_COACHES",
+  "MANAGE_ROLE_PERMISSIONS",
+  "MANAGE_PLAYERS",
+  "MANAGE_ATTENDANCE",
+  "MANAGE_FEES",
+  "VIEW_FINANCIALS",
+  "VIEW_REPORTS",
+  "MANAGE_MATCHES",
+  "MANAGE_TOURNAMENTS",
+  "VIEW_PARENT_PORTAL",
+  "VIEW_SPORTS_NEWS"
+];
+
+export const defaultRolePermissions: PermissionMap = {
+  SUPER_ADMIN: [...allPermissions],
+  ACADEMY_ADMIN: [
+    "MANAGE_ACADEMY",
+    "MANAGE_PLAYERS",
+    "MANAGE_ATTENDANCE",
+    "MANAGE_FEES",
+    "VIEW_FINANCIALS",
+    "VIEW_REPORTS",
+    "MANAGE_MATCHES",
+    "MANAGE_TOURNAMENTS",
+    "VIEW_PARENT_PORTAL",
+    "VIEW_SPORTS_NEWS"
+  ],
+  HEAD_COACH: [
+    "MANAGE_PLAYERS",
+    "MANAGE_ATTENDANCE",
+    "VIEW_REPORTS",
+    "MANAGE_MATCHES",
+    "MANAGE_TOURNAMENTS",
+    "VIEW_PARENT_PORTAL",
+    "VIEW_SPORTS_NEWS"
+  ],
+  ASSISTANT_COACH: [
+    "MANAGE_PLAYERS",
+    "MANAGE_ATTENDANCE",
+    "VIEW_REPORTS",
+    "VIEW_PARENT_PORTAL",
+    "VIEW_SPORTS_NEWS"
+  ],
+  MANAGER: [
+    "MANAGE_PLAYERS",
+    "MANAGE_ATTENDANCE",
+    "MANAGE_TOURNAMENTS",
+    "VIEW_REPORTS",
+    "VIEW_SPORTS_NEWS"
+  ],
+  ACCOUNTANT: [
+    "MANAGE_FEES",
+    "VIEW_FINANCIALS",
+    "VIEW_REPORTS",
+    "VIEW_SPORTS_NEWS"
+  ],
+  PARENT: [
+    "VIEW_PARENT_PORTAL",
+    "VIEW_SPORTS_NEWS"
+  ],
+  PLAYER: [
+    "VIEW_SPORTS_NEWS"
+  ]
+};

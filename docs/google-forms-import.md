@@ -22,6 +22,7 @@ x-import-token: your-token-from-GOOGLE_FORMS_IMPORT_TOKEN
 
 Create a Google Form with these question titles:
 
+- Academy Code
 - Full Name
 - Date of Birth
 - Gender
@@ -60,6 +61,7 @@ function onFormSubmit(e) {
   const row = e.namedValues;
 
   const payload = {
+    academyCode: value(row, "Academy Code"),
     fullName: value(row, "Full Name"),
     dateOfBirth: value(row, "Date of Birth"),
     gender: value(row, "Gender") || "MALE",
@@ -115,6 +117,7 @@ After the Google Form import creates the player record:
 1. Coach shares the generated `playerCode` with the player.
 2. Player opens the app and selects `Create`.
 3. Player enters:
+   - Academy Code
    - Player Code
    - Parent Contact Number
    - Email

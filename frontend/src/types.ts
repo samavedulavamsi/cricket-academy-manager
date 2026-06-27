@@ -1,5 +1,49 @@
+export type SessionUser = {
+  id: string;
+  academyId: string;
+  academyName: string;
+  academyCode: string;
+  name: string;
+  email: string;
+  role: string;
+  playerId?: string | null;
+};
+
+export type Permission =
+  | "MANAGE_ACADEMY"
+  | "MANAGE_COACHES"
+  | "MANAGE_ROLE_PERMISSIONS"
+  | "MANAGE_PLAYERS"
+  | "MANAGE_ATTENDANCE"
+  | "MANAGE_FEES"
+  | "VIEW_FINANCIALS"
+  | "VIEW_REPORTS"
+  | "MANAGE_MATCHES"
+  | "MANAGE_TOURNAMENTS"
+  | "VIEW_PARENT_PORTAL"
+  | "VIEW_SPORTS_NEWS";
+
+export type AcademySummary = {
+  id: string;
+  name: string;
+  academyCode: string;
+  city: string;
+  state: string;
+  country: string;
+  logoUrl?: string | null;
+  subscriptionPlan: string;
+  themeColor: string;
+};
+
+export type AcademyProfile = AcademySummary & {
+  currency: string;
+  timeZone: string;
+  ownerName: string;
+};
+
 export type Player = {
   id: string;
+  academyId: string;
   playerCode: string;
   fullName: string;
   dateOfBirth: string;
@@ -8,6 +52,7 @@ export type Player = {
   parentName: string;
   parentContactNumber: string;
   address?: string;
+  emergencyContact: string;
   playingRole: string;
   battingStyle: string;
   bowlingStyle: string;
@@ -20,6 +65,7 @@ export type Player = {
   attendance?: Attendance[];
   performanceStats?: PerformanceStat[];
   assessments?: Assessment[];
+  coachFeedback?: CoachFeedback[];
   matchPerformances?: Array<{
     id: string;
     runs: number;
@@ -38,6 +84,7 @@ export type Player = {
 export type Attendance = {
   id: string;
   playerId: string;
+  date: string;
   morningStatus: string;
   eveningStatus: string;
   player?: Player;
@@ -54,6 +101,7 @@ export type FeePayment = {
 
 export type PerformanceStat = {
   id: string;
+  recordedAt: string;
   runsScored: number;
   wickets: number;
   battingAverage: number;
@@ -136,4 +184,82 @@ export type Tournament = {
   status: string;
   notes?: string;
   matches: Match[];
+};
+
+export type SportsNewsItem = {
+  id: string;
+  category: string;
+  title: string;
+  summary: string;
+  source: string;
+  publishedAt: string;
+  imageUrl: string;
+  accentColor: string;
+  href: string;
+};
+
+export type Coach = {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string | null;
+  title?: string | null;
+  role: string;
+  profilePhotoUrl?: string | null;
+  createdAt: string;
+};
+
+export type CoachInvitation = {
+  id: string;
+  academyId: string;
+  email: string;
+  phone?: string | null;
+  role: string;
+  token: string;
+  message?: string | null;
+  status: string;
+  expiresAt: string;
+  acceptedAt?: string | null;
+  createdAt: string;
+};
+
+export type RoleConfig = {
+  role: string;
+  permissions: Permission[];
+};
+
+export type NotificationItem = {
+  id: string;
+  title: string;
+  message: string;
+  audience: string;
+  createdAt: string;
+};
+
+export type MediaAsset = {
+  id: string;
+  title: string;
+  type: string;
+  previewUrl: string;
+  createdAt: string;
+};
+
+export type DownloadResource = {
+  id: string;
+  title: string;
+  description: string;
+  fileUrl: string;
+  audience: string;
+  createdAt: string;
+};
+
+export type CoachFeedback = {
+  id: string;
+  title: string;
+  notes: string;
+  createdAt: string;
+  coach: {
+    name: string;
+    title?: string | null;
+  };
 };

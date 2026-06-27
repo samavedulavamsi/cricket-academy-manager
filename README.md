@@ -1,10 +1,20 @@
-# Cricket Academy Manager - Vite + Node.js
+# Cricket Academy Manager - Multi-Academy SaaS
 
-This is the split frontend/backend version:
+This project now supports the first seven SaaS features from the platform brief without rebuilding the app:
 
-- `frontend`: Vite + React + TypeScript
+1. Multi-academy data isolation with `academyId` ownership across core records.
+2. Academy registration that provisions academy, super admin, first coach, settings, and dashboard defaults.
+3. Academy-first login with academy search/code selection and a sports-news landing experience.
+4. Coach invitation, invitation-based registration, forgot/reset password, change password, and profile management.
+5. Configurable role permissions for the supported academy roles.
+6. Parent portal scoped to the parent’s own child only.
+7. Sports news architecture on the login page, ready for a real API later.
+
+## Stack
+
+- `frontend`: React + Vite + TypeScript
 - `backend`: Node.js + Express + TypeScript
-- `backend/prisma`: PostgreSQL schema and seed data
+- `backend/prisma`: PostgreSQL schema, migrations, and seed logic
 
 ## Run Locally
 
@@ -21,118 +31,99 @@ copy backend\.env.example backend\.env
 npm install
 ```
 
-3. Start PostgreSQL.
+3. Start PostgreSQL or point `DATABASE_URL` to Neon/Postgres.
 
-If Docker is installed:
-
-```bash
-docker compose up -d
-```
-
-If Docker is not installed, use any PostgreSQL database and update `DATABASE_URL`.
-
-4. Create tables and seed:
+4. Apply schema and seed:
 
 ```bash
 npm run prisma:migrate
 npm run prisma:seed
 ```
 
-5. Start frontend and backend together:
+5. Start both apps:
 
 ```bash
 npm run dev
 ```
 
-The frontend is configured to automatically open in your normal external default browser.
-
 URLs:
 
 - Frontend: `http://localhost:5173`
-- Backend API: `http://localhost:4000/api/health`
+- Backend health: `http://localhost:4000/api/health`
 
-Seeded login:
+## Default Bootstrap Academy
 
-Admin:
+When `ADMIN_EMAIL` and `ADMIN_PASSWORD` are present in `backend/.env`, the backend bootstraps a default academy and super admin on startup.
 
-- Email: value from `ADMIN_EMAIL`
-- Password: value from `ADMIN_PASSWORD`
+Default development values in the current env:
 
-Default development values if you do not change `.env`:
-
+- Academy code: `DBR2026`
 - Email: `dbr@gmail.com`
 - Password: `dbracademy`
 
-No sample players are inserted. Add players through the app forms.
+## Academy Auth Flows
 
-## Player Portal Logins
+- Academy registration creates academy profile, settings, super admin, first coach, default notifications, default downloads, default gallery items, and role-permission rows.
+- Academy login requires an academy code plus account email/password.
+- Parent signup requires academy code, player code, and parent contact number.
+- Coach signup requires an invitation token created by the academy super admin.
+- Forgot password generates a reset token; reset password consumes that token.
 
-There are two ways to create a player portal account.
+## Roles
 
-Coach-created account:
+Supported roles:
 
-- `Player Portal Email`
-- `Player Portal Password`
+- `SUPER_ADMIN`
+- `ACADEMY_ADMIN`
+- `HEAD_COACH`
+- `ASSISTANT_COACH`
+- `MANAGER`
+- `ACCOUNTANT`
+- `PARENT`
+- `PLAYER`
 
-Player-created account:
+Role permissions are stored per academy and can be updated from the Roles screen.
 
-1. Add/import the player first.
-2. Give the player their `Player Code`.
-3. Player opens the `Create` tab on the login screen.
-4. Player verifies with player code + parent contact number.
-5. Player creates their own email/password login.
+## Parent Portal Scope
 
-That player can then use the `Player` tab on the login screen to see only their own details.
+The parent portal returns only:
 
-Coaches can remove a player from the `Players` page. Removing a player also deletes linked attendance, fee, performance, improvement, match-performance, and portal-login data.
+- own child profile
+- own child attendance
+- own child fees
+- own child performance
+- coach feedback
+- parent-facing notifications
+- gallery items
+- downloads
+- upcoming matches
 
-## Added Academy Modules
+## Sports News
 
-- Player photo upload from the `Players` table.
-- WhatsApp fee reminder links from the `WhatsApp` module.
-- Parent/player portal via the `Player` login tab.
-- Match statistics dashboard in `Match Dashboard`.
-- Attendance summaries in `Attendance Reports`.
-- Fee due and overdue alerts in `Fee Alerts`.
-- Jersey number management in `Jerseys`.
-- Tournament creation and listing in `Tournaments`.
+The academy login page now renders a card-based sports-news section from `/api/news/sports`.
 
-WhatsApp reminders use click-to-send `wa.me` links. A full automatic WhatsApp sender requires a WhatsApp Business API provider and approved message templates.
+Current source:
 
-## Mobile / Play Store Path
+- static seeded backend feed
 
-The frontend is now PWA-ready with:
+Designed for later upgrade:
 
-- `manifest.webmanifest`
-- service worker
-- app icons
-- mobile viewport/theme metadata
-- responsive layouts
+- swap backend seed provider for a real sports news API without changing the frontend contract
 
-For Play Store publishing, package the PWA using a Trusted Web Activity or wrap the frontend with Capacitor after deploying the backend and frontend publicly.
+## Migration Notes
 
-Player data is stored in PostgreSQL. CSV reports can be opened in Excel.
+The multi-academy schema migration generated for this upgrade lives at:
 
-If your database already has old demo players from an earlier version, clear them with:
-
-```bash
-RESET_ACADEMY_DATA=true npm run prisma:seed
+```text
+backend/prisma/migrations/20260627143000_multi_academy_saas/migration.sql
 ```
 
 ## Google Forms
 
-Player registration from Google Forms is supported through a secure import endpoint.
+Google Forms import remains available. Payloads must now include `academyCode`.
 
-See:
+Reference:
 
 ```text
 docs/google-forms-import.md
 ```
-
-## Why This Version
-
-This structure is easier to understand if you want separate deployments:
-
-- Deploy frontend to Vercel, Netlify, or static hosting.
-- Deploy backend to Render, Railway, Fly.io, or a VPS.
-- Use PostgreSQL from Supabase, Neon, Railway, Render, or local Docker.
