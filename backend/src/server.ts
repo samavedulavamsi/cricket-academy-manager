@@ -486,9 +486,16 @@ app.use((error: unknown, _request: express.Request, response: express.Response, 
   response.status(500).json({ error: "Internal server error" });
 });
 
-app.listen(port, () => {
-  console.log(`API running on http://localhost:${port}`);
-});
+initializeAdminAccount()
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`API running on http://localhost:${port}`);
+    });
+  })
+  .catch((error: unknown) => {
+    console.error("Failed to initialize admin account", error);
+    process.exit(1);
+  });
 
 function csvEscape(value: unknown) {
   const text = String(value ?? "");
@@ -500,4 +507,32 @@ function normalizePhone(value: string) {
   if (digits.startsWith("91")) return digits;
   if (digits.length === 10) return `91${digits}`;
   return digits;
+}
+
+async function initializeAdminAccount() {
+  const email = process.env.ADMIN_EMAIL ?? process.env.COACH_EMAIL;
+  const password = process.env.ADMIN_PASSWORD ?? process.env.COACH_PASSWORD;
+  const name = process.env.ADMIN_NAME ?? process.env.COACH_NAME ?? "Academy Admin";
+
+  if (!email || !password) {
+    console.warn("ADMIN_EMAIL and ADMIN_PASSWORD are not set; skipping admin account sync.");
+    return;
+  }
+
+  await prisma.user.upsert({
+    where: { email },
+    update: {
+      name,
+      passwordHash: await hashPassword(password),
+      role: "ADMIN"
+    },
+    create: {
+      name,
+      email,
+      passwordHash: await hashPassword(password),
+      role: "ADMIN"
+    }
+  });
+
+  console.log(`Admin account ready: ${email}`);
 }
