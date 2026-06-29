@@ -111,26 +111,25 @@ enum MediaAssetType {
 }
 
 model Academy {
-  id               String            @id @default(cuid())
-  name             String
-  logoUrl          String?
-  address          String
-  city             String
-  state            String
-  country          String
-  mobileNumber     String
-  email            String
-  website          String?
-  ownerName        String
-  subscriptionPlan SubscriptionPlan  @default(FREE)
-  academyCode      String            @unique
-  subdomain        String?           @unique
-  timeZone         String            @default("Asia/Kolkata")
-  currency         String            @default("INR")
-  themeColor       String            @default("#17834b")
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-
+  id                  String                   @id @default(cuid())
+  name                String
+  logoUrl             String?
+  address             String
+  city                String
+  state               String
+  country             String
+  mobileNumber        String
+  email               String
+  website             String?
+  ownerName           String
+  subscriptionPlan    SubscriptionPlan         @default(FREE)
+  academyCode         String                   @unique
+  subdomain           String?                  @unique
+  timeZone            String                   @default("Asia/Kolkata")
+  currency            String                   @default("INR")
+  themeColor          String                   @default("#17834b")
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
   settings            AcademySettings?
   rolePermissions     RolePermission[]
   users               User[]
@@ -179,25 +178,25 @@ model RolePermission {
 }
 
 model User {
-  id              String   @id @default(cuid())
-  academyId       String
-  name            String
-  email           String
-  passwordHash    String
-  role            UserRole
-  playerId        String?  @unique
-  phone           String?
-  profilePhotoUrl String?
-  title           String?
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                String   @id @default(cuid())
+  academyId         String
+  name              String
+  email             String
+  passwordHash      String
+  role              UserRole
+  playerId          String?  @unique
+  phone             String?
+  profilePhotoUrl   String?
+  title             String?
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-  academy            Academy               @relation(fields: [academyId], references: [id], onDelete: Cascade)
-  player             Player?               @relation(fields: [playerId], references: [id], onDelete: Cascade)
-  sentInvitations    CoachInvitation[]     @relation("InvitationSender")
+  academy             Academy              @relation(fields: [academyId], references: [id], onDelete: Cascade)
+  player              Player?              @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  sentInvitations     CoachInvitation[]    @relation("InvitationSender")
   passwordResetTokens PasswordResetToken[]
-  coachFeedback      CoachFeedback[]       @relation("CoachFeedbackAuthor")
+  coachFeedback       CoachFeedback[]      @relation("CoachFeedbackAuthor")
 
   @@unique([academyId, email])
   @@index([academyId, role])
@@ -504,12 +503,12 @@ model CoachFeedback {
 }
 
 model Notification {
-  id         String       @id @default(cuid())
-  academyId  String
-  title      String
-  message    String
-  audience   AudienceType @default(ALL)
-  createdAt  DateTime     @default(now())
+  id        String       @id @default(cuid())
+  academyId String
+  title     String
+  message   String
+  audience  AudienceType @default(ALL)
+  createdAt DateTime     @default(now())
 
   academy Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
 
