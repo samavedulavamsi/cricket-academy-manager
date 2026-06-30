@@ -4,7 +4,9 @@ import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
+import { existsSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { randomBytes } from "node:crypto";
 import type { PermissionKey, Prisma, UserRole } from "@prisma/client";
 import {
@@ -45,8 +47,8 @@ import { hashPassword, verifyPassword } from "./lib/password.js";
 const app = express();
 const port = Number(process.env.PORT ?? 4000);
 const clientUrl = process.env.CLIENT_URL ?? "http://localhost:5173";
-const frontendDistPath = path.resolve(process.cwd(), "../frontend/dist");
 const today = new Date("2026-06-27T00:00:00.000Z");
+const frontendDistPath = resolveFrontendDistPath();
 
 type ReportPlayer = {
   playerCode: string;
@@ -1228,6 +1230,25 @@ function normalizePhone(value: string) {
 
 function randomToken() {
   return randomBytes(24).toString("hex");
+}
+
+function resolveFrontendDistPath() {
+  const currentFile = fileURLToPath(import.meta.url);
+  const currentDir = path.dirname(currentFile);
+  const candidates = [
+    path.resolve(currentDir, "../../frontend/dist"),
+    path.resolve(currentDir, "../../../frontend/dist"),
+    path.resolve(process.cwd(), "frontend/dist"),
+    path.resolve(process.cwd(), "../frontend/dist")
+  ];
+
+  for (const candidate of candidates) {
+    if (existsSync(path.join(candidate, "index.html"))) {
+      return candidate;
+    }
+  }
+
+  return candidates[0];
 }
 
 function roleTitle(role: UserRole) {

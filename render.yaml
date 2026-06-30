@@ -1,0 +1,43 @@
+services:
+  - type: web
+    name: cricket-academy-manager
+    runtime: node
+    plan: free
+    buildCommand: npm run render:build
+    startCommand: npm run start
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: NODE_ENV
+        value: production
+      - key: CLIENT_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: ADMIN_NAME
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ACADEMY_NAME
+        sync: false
+      - key: ACADEMY_CODE
+        sync: false
+      - key: ACADEMY_OWNER
+        sync: false
+      - key: ACADEMY_CITY
+        sync: false
+      - key: ACADEMY_STATE
+        sync: false
+      - key: ACADEMY_COUNTRY
+        sync: false
+      - key: ACADEMY_PHONE
+        sync: false
+      - key: ACADEMY_THEME_COLOR
+        sync: false
+      - key: GOOGLE_FORMS_IMPORT_TOKEN
+        sync: false

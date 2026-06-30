@@ -118,6 +118,37 @@ The multi-academy schema migration generated for this upgrade lives at:
 backend/prisma/migrations/20260627143000_multi_academy_saas/migration.sql
 ```
 
+## Render Deployment
+
+This repo is set up to run as a single Node web service on Render:
+
+- build command: `npm run render:build`
+- start command: `npm run start`
+
+The backend serves the built frontend, and the backend start command applies Prisma migrations before booting the server.
+
+`render:build` intentionally installs dev dependencies during the build step because the frontend production build requires TypeScript, Vite, and React type packages.
+
+Important Render env vars:
+
+- `DATABASE_URL`
+- `JWT_SECRET`
+- `CLIENT_URL`
+- `ADMIN_NAME`
+- `ADMIN_EMAIL`
+- `ADMIN_PASSWORD`
+- `ACADEMY_NAME`
+- `ACADEMY_CODE`
+- `ACADEMY_OWNER`
+- `ACADEMY_CITY`
+- `ACADEMY_STATE`
+- `ACADEMY_COUNTRY`
+- `ACADEMY_PHONE`
+- `ACADEMY_THEME_COLOR`
+- `GOOGLE_FORMS_IMPORT_TOKEN`
+
+`render.yaml` is included so the service shape is explicit.
+
 ## Google Forms
 
 Google Forms import remains available. Payloads must now include `academyCode`.
