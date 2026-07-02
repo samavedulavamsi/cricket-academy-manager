@@ -166,6 +166,8 @@ export const googleFormPlayerSchema = z.object({
   portalPassword: z.string().min(8).optional().or(z.literal(""))
 });
 
+export type GoogleFormPlayerInput = z.infer<typeof googleFormPlayerSchema>;
+
 export const playerPhotoSchema = z.object({
   photoUrl: z.string().min(10)
 });

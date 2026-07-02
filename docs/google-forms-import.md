@@ -2,14 +2,26 @@
 
 Yes, you can collect player registrations in Google Forms and store them in this app.
 
-## Recommended Flow
+## Recommended Flows
 
-Google Form -> Google Sheet -> Apps Script -> `POST /api/import/google-forms/player` -> Coach gives Player Code -> Player creates their own account
+Review queue flow:
+
+Google Form -> Google Sheet -> Apps Script -> `POST /api/import/google-forms/player` -> Coach reviews registrations -> Coach approves -> Player gets created
+
+Direct save flow:
+
+Google Form -> Google Sheet -> Apps Script -> `POST /api/public/player-intake` -> Player record is created immediately in the academy database
 
 This app now includes the backend endpoint:
 
 ```text
 POST http://YOUR_BACKEND_URL/api/import/google-forms/player
+```
+
+For direct player creation without coach approval:
+
+```text
+POST http://YOUR_BACKEND_URL/api/public/player-intake
 ```
 
 It requires this header:
@@ -51,10 +63,63 @@ Use these exact option values where possible:
 
 ## Apps Script
 
+### Option 1: direct save into academy database
+
+Use this when you want player submissions to create academy player records immediately.
+
+```javascript
+const API_URL = "https://YOUR_BACKEND_URL/api/public/player-intake";
+const INTAKE_TOKEN = "replace-with-your-GOOGLE_FORMS_IMPORT_TOKEN";
+
+function onFormSubmit(e) {
+  const row = e.namedValues;
+
+  const payload = {
+    academyCode: value(row, "Academy Code"),
+    fullName: value(row, "Full Name"),
+    dateOfBirth: value(row, "Date of Birth"),
+    gender: value(row, "Gender") || "MALE",
+    mobileNumber: value(row, "Mobile Number"),
+    parentName: value(row, "Parent Name"),
+    parentContactNumber: value(row, "Parent Contact Number"),
+    address: value(row, "Address"),
+    bloodGroup: value(row, "Blood Group"),
+    emergencyContact: value(row, "Emergency Contact"),
+    playingRole: value(row, "Playing Role") || "BATSMAN",
+    battingStyle: value(row, "Batting Style") || "Right Hand Bat",
+    bowlingStyle: value(row, "Bowling Style") || "None",
+    jerseyNumber: value(row, "Jersey Number"),
+    joiningDate: value(row, "Joining Date") || new Date().toISOString(),
+    skillLevel: value(row, "Skill Level") || "BEGINNER",
+    monthlyFeeAmount: value(row, "Monthly Fee Amount") || 0,
+    admissionFee: value(row, "Admission Fee") || 0,
+    discount: value(row, "Discount") || 0
+  };
+
+  UrlFetchApp.fetch(API_URL, {
+    method: "post",
+    contentType: "application/json",
+    headers: {
+      "x-intake-token": INTAKE_TOKEN
+    },
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
+  });
+}
+
+function value(row, key) {
+  return row[key] && row[key][0] ? row[key][0] : "";
+}
+```
+
+### Option 2: review queue
+
+Use this when you want Google Form entries to land in the registrations queue first.
+
 Open the response Google Sheet, then go to `Extensions -> Apps Script` and paste:
 
 ```javascript
-const API_URL = "http://YOUR_BACKEND_URL/api/import/google-forms/player";
+const API_URL = "https://YOUR_BACKEND_URL/api/import/google-forms/player";
 const IMPORT_TOKEN = "replace-with-your-GOOGLE_FORMS_IMPORT_TOKEN";
 
 function onFormSubmit(e) {
@@ -109,6 +174,15 @@ Then add an installable trigger:
 ## Local Development Note
 
 Google Apps Script cannot call `localhost`. For local testing, expose your backend with a tunnel such as ngrok or Cloudflare Tunnel, then set `API_URL` to that public HTTPS URL.
+
+## Direct Save Notes
+
+- Direct save creates the player immediately in the selected academy.
+- It still requires:
+  - valid `academyCode`
+  - valid shared import token
+  - academy registration to be open
+- This is the closest setup to "player fills Google Form and it goes straight into the academy database."
 
 ## Player Self Registration
 

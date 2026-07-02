@@ -32,6 +32,7 @@ import {
   coachRoleSchema,
   forgotPasswordSchema,
   googleFormPlayerSchema,
+  type GoogleFormPlayerInput,
   jerseySchema,
   loginSchema,
   playerRegistrationSchema,
@@ -836,8 +837,14 @@ app.post("/api/import/google-forms/player", async (request, response) => {
   const parsed = googleFormPlayerSchema.safeParse(request.body);
   if (!parsed.success) return response.status(400).json({ error: parsed.error.flatten() });
 
-  const academy = await prisma.academy.findUnique({ where: { academyCode: parsed.data.academyCode.toUpperCase() } });
+  const academy = await prisma.academy.findUnique({
+    where: { academyCode: parsed.data.academyCode.toUpperCase() },
+    include: { settings: true }
+  });
   if (!academy) return response.status(404).json({ error: "Academy not found" });
+  if (!academy.settings?.registrationOpen) {
+    return response.status(403).json({ error: "Academy registration is currently closed" });
+  }
 
   const { academyCode: _academyCode, portalEmail, portalPassword, ...playerData } = parsed.data;
   const registration = await prisma.pendingRegistration.create({
@@ -849,6 +856,29 @@ app.post("/api/import/google-forms/player", async (request, response) => {
   });
 
   response.status(201).json({ registration });
+});
+
+app.post("/api/public/player-intake", async (request, response) => {
+  const expectedToken = process.env.GOOGLE_FORMS_IMPORT_TOKEN;
+  const token = request.header("x-intake-token") ?? request.header("x-import-token") ?? request.query.token;
+  if (!expectedToken || token !== expectedToken) {
+    return response.status(401).json({ error: "Invalid intake token" });
+  }
+
+  const parsed = googleFormPlayerSchema.safeParse(request.body);
+  if (!parsed.success) return response.status(400).json({ error: parsed.error.flatten() });
+
+  const academy = await prisma.academy.findUnique({
+    where: { academyCode: parsed.data.academyCode.toUpperCase() },
+    include: { settings: true }
+  });
+  if (!academy) return response.status(404).json({ error: "Academy not found" });
+  if (!academy.settings?.registrationOpen) {
+    return response.status(403).json({ error: "Academy registration is currently closed" });
+  }
+
+  const player = await createPlayerFromGoogleForm(academy.id, academy.academyCode, parsed.data);
+  response.status(201).json({ player, mode: "DIRECT_PLAYER_INTAKE" });
 });
 
 app.get("/api/registrations", requireAuth, requirePermission("MANAGE_PLAYERS"), async (request, response) => {
@@ -1340,6 +1370,44 @@ async function generateAcademyCode(name: string) {
   }
 
   return `ACAD${Date.now().toString().slice(-6)}`;
+}
+
+async function createPlayerFromGoogleForm(
+  academyId: string,
+  academyCode: string,
+  payload: GoogleFormPlayerInput
+) {
+  const { academyCode: _academyCode, portalEmail, portalPassword, ...playerData } = payload;
+  const count = await prisma.player.count({ where: { academyId } });
+  const nextJersey = playerData.jerseyNumber ?? count + 1;
+
+  return prisma.$transaction(async (tx) => {
+    const createdPlayer = await tx.player.create({
+      data: {
+        academyId,
+        playerCode: `${academyCode}-${new Date().getFullYear()}-${String(count + 1).padStart(3, "0")}`,
+        ...playerData,
+        jerseyNumber: nextJersey
+      }
+    });
+
+    if (portalEmail && portalPassword) {
+      await tx.user.create({
+        data: {
+          academyId,
+          name: createdPlayer.parentName,
+          email: portalEmail.toLowerCase(),
+          passwordHash: await hashPassword(portalPassword),
+          role: "PARENT",
+          playerId: createdPlayer.id,
+          phone: createdPlayer.parentContactNumber,
+          title: "Parent Portal"
+        }
+      });
+    }
+
+    return createdPlayer;
+  });
 }
 
 async function initializeSystemAcademy() {

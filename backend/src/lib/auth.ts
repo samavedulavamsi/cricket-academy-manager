@@ -53,6 +53,38 @@ export async function authenticate(academyCode: string, email: string, password:
   } satisfies SessionUser;
 }
 
+export async function resolveSessionUser(session: Pick<SessionUser, "id" | "academyId">) {
+  const user = await prisma.user.findFirst({
+    where: {
+      id: session.id,
+      academyId: session.academyId,
+      isActive: true
+    },
+    include: {
+      academy: {
+        select: {
+          id: true,
+          name: true,
+          academyCode: true
+        }
+      }
+    }
+  });
+
+  if (!user) return null;
+
+  return {
+    id: user.id,
+    academyId: user.academy.id,
+    academyName: user.academy.name,
+    academyCode: user.academy.academyCode,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    playerId: user.playerId
+  } satisfies SessionUser;
+}
+
 export async function getPermissionsForUser(user: SessionUser) {
   const configured = await prisma.rolePermission.findMany({
     where: {
@@ -76,14 +108,20 @@ function signSession(user: SessionUser) {
   return jwt.sign(user, secret, { expiresIn: "7d" });
 }
 
-export function requireAuth(request: Request, response: Response, next: NextFunction) {
+export async function requireAuth(request: Request, response: Response, next: NextFunction) {
   const token = request.cookies?.[cookieName];
   if (!token) return response.status(401).json({ error: "Unauthorized" });
 
   try {
     const secret = process.env.JWT_SECRET;
     if (!secret) throw new Error("JWT_SECRET is required");
-    request.user = jwt.verify(token, secret) as SessionUser;
+    const decoded = jwt.verify(token, secret) as SessionUser;
+    const user = await resolveSessionUser({ id: decoded.id, academyId: decoded.academyId });
+    if (!user) {
+      clearSessionCookie(response);
+      return response.status(401).json({ error: "Unauthorized" });
+    }
+    request.user = user;
     next();
   } catch {
     return response.status(401).json({ error: "Unauthorized" });
